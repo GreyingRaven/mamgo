@@ -1,16 +1,19 @@
-package mamgo
+package main
 
 import (
 	"fmt"
-
-	"github.com/gookit/ini/v2"
+	"os"
+	
+	"github.com/greyingraven/mamgo/cfg"
+	"github.com/greyingraven/mamgo/db"
 )
 
 func main() {
 	fmt.Println("Loading configuration file")
-	err := ini.LoadExists("mamgo.ini")
+	conf, err := cfg.LoadConfig("cfg/mamgo.ini")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to load config file: %v\n", err)
 	}
-	fmt.Fprintf("Main ToDo: %s\n", ini.String("main.todo"))
+	fmt.Fprintf(os.Stdout, "Main ToDo: %s\n", conf.Todo)
+	db.GetVideo()
 }
