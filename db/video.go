@@ -2,7 +2,7 @@ package db
 
 import (
 	"github.com/jackc/pgx/v5"
-	"github.com/greyingraven/mamgo/pgsql"
+	"github.com/greyingraven/mamgo/pgconn"
 )
 
 type Video struct {
@@ -21,7 +21,7 @@ func InsertVideo(video Video) (err error) {
 		"src": video.Src,
 		"type":	video.Type,
 	}
-	_, err := pgsql.Insert(query, args)
+	err = pgconn.Insert(query, args)
 	if err != nil {
 		return err
 	}
@@ -29,11 +29,10 @@ func InsertVideo(video Video) (err error) {
 }
 
 func GetVideo() (path string, err error) {
-	var path string
 	query := `SELECT path FROM public.video WHERE id=3`
-	_, err := pgsql.GetOne(query).Scan(&path)
+	err = pgconn.GetOne(query).Scan(&path)
 	if err != nil {
-		return nil, err
+		return ``, err
 	}
 	return path, nil
 	

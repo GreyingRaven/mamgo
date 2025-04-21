@@ -10,11 +10,14 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-var db pgxpool.Pool
+type Pgconn struct {
+	db *pgxpool.Pool
+}
 
+var Pool *Pgconn
 
-func Insert(query string, args pgx.NamedArgs) {
-	_, err := db.Exec(context.Background(), query, args)
+func Insert(query string, args pgx.NamedArgs) error {
+	_, err := Pool.db.Exec(context.Background(), query, args)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to insert row: %w", err)
 		return fmt.Errorf("Unable to insert row: %w", err)
@@ -22,24 +25,38 @@ func Insert(query string, args pgx.NamedArgs) {
 	return nil
 }
 
-func GetOne(query string) (row pgx.Row, err error) {
-	row, err := db.QueryRow(context.Background(), query)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "QueryRow failed: %v\n", err)
-		return nil, err
-	}
-	
-	return row, nil
+func GetOne(query string) (row pgx.Row) {
+	row = Pool.db.QueryRow(context.Background(), query)
+	return row
 }
 
 func GetMany(query string) (rows pgx.Rows, err error) {
-	rows, err := db.Query(context.Background(), query)
+	rows, err = Pool.db.Query(context.Background(), query)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Query failed: %v\n", err)
 		return nil, err
-	}
-	
+	}	
 	return rows, nil	
+}
+
+func StartConnection() {
+	conf := cfg.GetDbConfig()
+	poolCfg, err := pgxpool.ParseConfig(fmt.Sprintf("user=%s password=%s host=%s port=%d dbname=%s", conf.User, conf.Password, conf.Host, conf.Port, conf.Database))
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to parse pool configuration: %v\n", err)
+		os.Exit(1)
+	}
+	db, err := pgxpool.NewWithConfig(context.Background(), poolCfg)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
+		os.Exit(1)
+	}
+	pool := &Pgconn{
+		db: db,
+	}
+
+	Pool = pool
+	// defer pgconn.db.Close()
 }
 
 func Test() {
