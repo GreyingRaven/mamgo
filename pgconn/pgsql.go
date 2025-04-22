@@ -16,11 +16,24 @@ type Pgconn struct {
 
 var Pool *Pgconn
 
-func Insert(query string, args pgx.NamedArgs) error {
+func Insert(query string, args pgx.NamedArgs) int {
+	var id int
+	fmt.Printf("Query: %v\n", query)
+	fmt.Println(args)
+	Pool.db.QueryRow(context.Background(), query, args).Scan(&id)
+	fmt.Printf("%v\n", id)
+	return id
+}
+
+func Update(query string, args pgx.NamedArgs) error {
+	return Exec(query, args, "Unable to insert row: %w")
+}
+
+func Exec(query string, args pgx.NamedArgs, error string) error {
 	_, err := Pool.db.Exec(context.Background(), query, args)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to insert row: %w", err)
-		return fmt.Errorf("Unable to insert row: %w", err)
+		fmt.Fprintf(os.Stderr, error, err)
+		return fmt.Errorf("Unable to update row: %w", err)
 	}
 	return nil
 }
