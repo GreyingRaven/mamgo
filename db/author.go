@@ -18,6 +18,11 @@ type Author struct {
 	Aka []string
 }
 
+type AuthorSearch struct {
+	Id int
+	Name string
+}
+
 func InsertAuthor(author *Author) (int, error) {
 	conf := cfg.GetConfig()
 	query := `INSERT INTO public.author(name, link, aka) VALUES (@name, @link, @aka) RETURNING id`
@@ -27,16 +32,27 @@ func InsertAuthor(author *Author) (int, error) {
 		"aka": author.Aka,
 	}
 	newId := pgconn.Insert(query, args)
-	fmt.Printf("%v\n", newId)
 	
-	// Create author folders in image to store profile.avif
-
+	// Create author folders in images to store profile.avif
 	path := filepath.Join(conf.Path.Images, strconv.Itoa(newId))
-	fmt.Printf("%v\n", path)	
 	err := os.MkdirAll(path, os.ModePerm)
 	if err != nil {
 		return 0, err 
 	}
+	// TODO: Move to Video/Music. Create folder on author first media
+	// Create author folders in videos
+	path = filepath.Join(conf.Path.Videos, strconv.Itoa(newId))
+	err = os.MkdirAll(path, os.ModePerm)
+	if err != nil {
+		return 0, err 
+	}
+	// Create author folders in music
+	path = filepath.Join(conf.Path.Music, strconv.Itoa(newId))
+	err = os.MkdirAll(path, os.ModePerm)
+	if err != nil {
+		return 0, err 
+	}
+
 	return newId, nil 
 }
 
@@ -53,6 +69,19 @@ func UpdateAuthor(author *Author) (err error) {
 		return err
 	}
 	return nil
+}
+
+func FindAuthors() (author []Author, err error) {
+	query := fmt.Sprintf("SELECT * FROM public.author")
+	rows, err := pgconn.GetMany(query)
+	if err != nil {
+		return author, err
+	}
+	authors, err := pgx.CollectRows(rows, pgx.RowToStructByPos[Author])
+	if err != nil {
+		return author, err
+	}
+	return authors, nil	
 }
 
 func GetAuthorById(id int) (author Author, err error) {

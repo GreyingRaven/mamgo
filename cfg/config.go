@@ -11,6 +11,7 @@ var Cfg *Config
 
 type Config struct {
 	Todo string
+	Port int
 	Root string
 	Path Path
 	Db   Db
@@ -59,6 +60,8 @@ func LoadConfig(configFile string) (*Config, error) {
 	}
 	config := &Config{
 		Todo: ini.String("main.todo"),
+		Root: ini.String("main.root"),
+		Port: ini.Int("main.port"),
 		Path: *path,
 		Db: *db,
 	}

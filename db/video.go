@@ -16,6 +16,17 @@ type Video struct {
 	V_id      string
 }
 
+type VideoSearch struct {
+	Title     string
+	Author_id int
+	V_type    string
+	V_id      string
+}
+
+type VideoStream struct {
+	Author_id int
+}
+
 func InsertVideo(video *Video) int {
 	query := `INSERT INTO public.video(title, author_id, src, v_type, v_id) VALUES (@title, @author_id, @src, @type, @v_id) RETURNING id`
 	args := pgx.NamedArgs{
@@ -46,6 +57,19 @@ func UpdateVideo(video *Video) (err error) {
 	return nil
 }
 
+func FindVideos() (videos []VideoSearch, err error) {
+	query := fmt.Sprintf("SELECT title, author_id, v_type, v_id FROM public.video")
+	rows, err := pgconn.GetMany(query)
+	if err != nil {
+		return videos, err
+	}
+	videos, err = pgx.CollectRows(rows, pgx.RowToStructByName[VideoSearch])
+	if err != nil {
+		return videos, err
+	}
+	return videos, nil	
+}
+
 func GetVideoById(id int) (video Video, err error) {
 	query := fmt.Sprintf("SELECT * FROM public.video WHERE id=%d", id)
 	rows, err := pgconn.GetMany(query)
@@ -53,6 +77,19 @@ func GetVideoById(id int) (video Video, err error) {
 		return video, err
 	}
 	videos, err := pgx.CollectRows(rows, pgx.RowToStructByPos[Video])
+	if err != nil {
+		return video, err
+	}
+	return videos[0], nil	
+}
+
+func GetVideoByVId(v_id string) (video VideoStream, err error) {
+	query := fmt.Sprintf("SELECT author_id FROM public.video WHERE v_id='%s'", v_id)
+	rows, err := pgconn.GetMany(query)
+	if err != nil {
+		return video, err
+	}
+	videos, err := pgx.CollectRows(rows, pgx.RowToStructByPos[VideoStream])
 	if err != nil {
 		return video, err
 	}
