@@ -14,10 +14,10 @@ import (
 )
 
 var (
-    VideoRe       = regexp.MustCompile(`^/video/*$`)
-    VideosRe       = regexp.MustCompile(`^/videos/*$`)
-    VideoReWithID = regexp.MustCompile(`^/video/([0-9]+)$`)
-	VideoReWithVID = regexp.MustCompile(`^/video/([a-zA-Z0-9]+)$`)
+    VideoRe       = regexp.MustCompile(`^*/video/*$`)
+    VideosRe       = regexp.MustCompile(`^*/videos/*$`)
+    VideoReWithID = regexp.MustCompile(`^*/video/([0-9]+)$`)
+	VideoReWithVID = regexp.MustCompile(`^*/video/([a-zA-Z0-9]+)$`)
 )
 
 func (v *videoHandler) ListVideos(w http.ResponseWriter, r *http.Request) {
@@ -170,7 +170,12 @@ func (v *videoHandler) CreateVideo(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error reading video info from body", http.StatusInternalServerError)
 		return
 	}
-	id := db.InsertVideo(newVideo)
+	id, err := db.InsertVideo(newVideo)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error creating video: %v", err), http.StatusInternalServerError)
+		return
+	}
+
 	response := fmt.Sprintf("Created new video with id: %d\n", id)
 	fmt.Println(response)
 	

@@ -39,13 +39,6 @@ func InsertAuthor(author *Author) (int, error) {
 	if err != nil {
 		return 0, err 
 	}
-	// TODO: Move to Video/Music. Create folder on author first media
-	// Create author folders in videos
-	path = filepath.Join(conf.Path.Videos, strconv.Itoa(newId))
-	err = os.MkdirAll(path, os.ModePerm)
-	if err != nil {
-		return 0, err 
-	}
 	// Create author folders in music
 	path = filepath.Join(conf.Path.Music, strconv.Itoa(newId))
 	err = os.MkdirAll(path, os.ModePerm)

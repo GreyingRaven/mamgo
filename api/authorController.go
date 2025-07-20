@@ -11,10 +11,10 @@ import (
 )
 
 var (
-    AuthorRe       = regexp.MustCompile(`^/author/*$`)
-    AuthorsRe       = regexp.MustCompile(`^/authors/*$`)
-    AuthorReWithID = regexp.MustCompile(`^/author/([0-9]+)$`)
-	AuthorReWithVID = regexp.MustCompile(`^/author/([a-zA-Z0-9]+)$`)
+    AuthorRe       = regexp.MustCompile(`^*/author/*$`)
+    AuthorsRe       = regexp.MustCompile(`^*/authors/*$`)
+    AuthorReWithID = regexp.MustCompile(`^*/author/([0-9]+)$`)
+	AuthorReWithVID = regexp.MustCompile(`^*/author/([a-zA-Z0-9]+)$`)
 )
 
 func (v *authorHandler) ListAuthors(w http.ResponseWriter, r *http.Request) {

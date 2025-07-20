@@ -2,9 +2,13 @@ package db
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
+	"strconv"
 	
 	"github.com/jackc/pgx/v5"
 	"github.com/greyingraven/mamgo/pgconn"
+	"github.com/greyingraven/mamgo/cfg"
 )
 
 type Video struct {
@@ -27,7 +31,8 @@ type VideoStream struct {
 	Author_id int
 }
 
-func InsertVideo(video *Video) int {
+func InsertVideo(video *Video) (int, error) {
+	conf := cfg.GetConfig()
 	query := `INSERT INTO public.video(title, author_id, src, v_type, v_id) VALUES (@title, @author_id, @src, @type, @v_id) RETURNING id`
 	args := pgx.NamedArgs{
 		"title": video.Title,
@@ -36,8 +41,20 @@ func InsertVideo(video *Video) int {
 		"type":	video.V_type,
 		"v_id": video.V_id,
 	}
+	// Create author folders in videos if it doesn't exist
+	path := filepath.Join(conf.Path.Videos, strconv.Itoa(video.Author_id))
+	err := os.MkdirAll(path, os.ModePerm)
+	if err != nil {
+		return 0, err 
+	}
+	// Move video to author folder
+	videoPath := fmt.Sprintf("%v/%v/%v", conf.Path.Videos, video.Author_id, video.V_id)
+	err = os.Rename(video.Src, videoPath)
+	if err != nil {
+		return 0, err
+	}
 	newId := pgconn.Insert(query, args)
-	return newId
+	return newId, nil
 }
 
 func UpdateVideo(video *Video) (err error) {
