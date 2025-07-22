@@ -83,6 +83,21 @@ func (v *authorHandler) CreateAuthor(w http.ResponseWriter, r *http.Request) {
 
 func (v *authorHandler) UpdateAuthor(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Entered UpdateAuthor")
+	var edAuthor *db.Author
+	err := json.NewDecoder(r.Body).Decode(&edAuthor)
+	if err != nil {
+		http.Error(w, "Error reading author info from body", http.StatusInternalServerError)
+		return
+	}
+	err = db.UpdateAuthor(edAuthor)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error creating new author: %v", err), http.StatusInternalServerError)
+		return
+	}
+	response := fmt.Sprintf("Updated author with id: %d\n", edAuthor.Id)
+	fmt.Println(response)
+	
+	w.WriteHeader(http.StatusOK)
 }
 
 func (v *authorHandler) DeleteAuthor(w http.ResponseWriter, r *http.Request) {

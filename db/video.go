@@ -48,8 +48,9 @@ func InsertVideo(video *Video) (int, error) {
 		return 0, err 
 	}
 	// Move video to author folder
-	videoPath := fmt.Sprintf("%v/%v/%v", conf.Path.Videos, video.Author_id, video.V_id)
-	err = os.Rename(video.Src, videoPath)
+	videoSrc := fmt.Sprintf("%v/%v", conf.Path.Videos, video.Src)
+	videoPath := fmt.Sprintf("%v/%v/%v.mp4", conf.Path.Videos, video.Author_id, video.V_id)
+	err = os.Rename(videoSrc, videoPath)
 	if err != nil {
 		return 0, err
 	}

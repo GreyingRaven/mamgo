@@ -38,7 +38,10 @@ func MamGoHandler() {
 	// Run the server
 	port := conf.Port
 	servePort := fmt.Sprintf(":%v", port)
-	handler := cors.Default().Handler(mux)
+	c := cors.New(cors.Options{
+		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"},
+	})
+	handler := c.Handler(mux)
 	http.ListenAndServe(servePort, handler)
 }
 
