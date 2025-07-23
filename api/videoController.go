@@ -185,6 +185,22 @@ func (v *videoHandler) CreateVideo(w http.ResponseWriter, r *http.Request) {
 
 func (v *videoHandler) UpdateVideo(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Entered UpdateVideo")
+	var edVideo *db.Video
+	err := json.NewDecoder(r.Body).Decode(&edVideo)
+	if err != nil {
+		http.Error(w, "Error reading video info from body", http.StatusInternalServerError)
+		return
+	}
+	err = db.UpdateVideo(edVideo)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error creating video: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	response := fmt.Sprintf("Edited video with id: %d\n", edVideo.V_id)
+	fmt.Println(response)
+	
+	w.WriteHeader(http.StatusOK)
 }
 
 func (v *videoHandler) DeleteVideo(w http.ResponseWriter, r *http.Request) {

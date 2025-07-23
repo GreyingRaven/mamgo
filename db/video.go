@@ -20,13 +20,6 @@ type Video struct {
 	V_id      string
 }
 
-type VideoSearch struct {
-	Title     string
-	Author_id int
-	V_type    string
-	V_id      string
-}
-
 type VideoStream struct {
 	Author_id int
 }
@@ -75,13 +68,13 @@ func UpdateVideo(video *Video) (err error) {
 	return nil
 }
 
-func FindVideos() (videos []VideoSearch, err error) {
-	query := fmt.Sprintf("SELECT title, author_id, v_type, v_id FROM public.video")
+func FindVideos() (videos []Video, err error) {
+	query := fmt.Sprintf("SELECT id, title, src, author_id, v_type, v_id FROM public.video")
 	rows, err := pgconn.GetMany(query)
 	if err != nil {
 		return videos, err
 	}
-	videos, err = pgx.CollectRows(rows, pgx.RowToStructByName[VideoSearch])
+	videos, err = pgx.CollectRows(rows, pgx.RowToStructByName[Video])
 	if err != nil {
 		return videos, err
 	}
